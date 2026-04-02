@@ -67,6 +67,9 @@ static __nocfi int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 extern int security_bprm_check(struct linux_binprm *bprm);
 static __nocfi int ksu_bprm_check(struct linux_binprm *bprm)
 {
+#ifdef CONFIG_KSU_FEATURE_SULOG
+	ksu_sulog_emit_bprm((const char *)bprm->filename);
+#endif
 	return security_bprm_check(bprm);
 }
 
@@ -198,6 +201,7 @@ static void __init ksu_core_init(void)
 	pr_info("lsm_hijack: security_task_fix_setuid: ret %d \n", ret);
 	symbol_addr = NULL;
 
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	// bprm, TODO: refine
 	target_callsite = (uintptr_t)kallsyms_lookup_name("bprm_execve");
 	symbol_addr = (uintptr_t)&security_bprm_check;
@@ -205,6 +209,7 @@ static void __init ksu_core_init(void)
 	ret = lsm_hunt_symbol_callsite(target_callsite, 256 * sizeof(void *), symbol_addr, (uintptr_t)&ksu_bprm_check);
 	pr_info("lsm_hijack: security_bprm_check: ret %d \n", ret);
 	symbol_addr = NULL;
+#endif
 
 	// read
 	extern ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count);
