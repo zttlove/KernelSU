@@ -2,7 +2,7 @@ struct cred* ksu_cred;
 
 extern void ksu_supercalls_init();
 
-int __init kernelsu_init(void)
+static int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert("*************************************************************");
